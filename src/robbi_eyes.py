@@ -7,16 +7,20 @@ import microbit as mb
 LED_STRIP_LENGTH = 24
 
 # Speed of fade (0.0 - 1.0). Higher value, slower fade.
-LED_FADE_SPEED = 0.8
+LED_FADE_SPEED = 0.7
 
 # How often to advance the "head" LED
 LED_ADVANCE_RATE_HZ = 20
 
 # How often to update/refresh the LED strip
-LED_UPDATE_RATE_HZ = 40
+# Tests seem to indicate, a maximum rate of 30 HZ
+LED_UPDATE_RATE_HZ = 20
+
+# This pin is high when update pin (Use for bebugging)
+LED_UPDATE_RATE_PIN = mb.pin1
 
 # The pin sending the data to the LED strip
-LED_STRIP_PIN = mb.pin0
+LED_STRIP_DATA_PIN = mb.pin0
 
 # Clear display on MB after this many milliseconds
 DISPLAY_CLEAR_MS = 1500
@@ -48,7 +52,7 @@ LED_ADVANCE_RATE_MS = 1000 / LED_ADVANCE_RATE_HZ
 LED_UPDATE_RATE_MS = 1000 / LED_UPDATE_RATE_HZ
 
 # The LED strip
-led_strip = neopixel.NeoPixel(LED_STRIP_PIN, LED_STRIP_LENGTH)
+led_strip = neopixel.NeoPixel(LED_STRIP_DATA_PIN, LED_STRIP_LENGTH)
 
 # make sure all LEDs are off.
 led_strip.clear()
@@ -113,10 +117,12 @@ while True:
 
     # Lower intensity of all LEDs and write data to strip
     if utime.ticks_diff(utime.ticks_ms(), ts_led_update) > LED_UPDATE_RATE_MS:
+        LED_UPDATE_RATE_PIN.write_digital(1)
         ts_led_update = utime.ticks_ms()
         for i in range(LED_STRIP_LENGTH):
             led_strip[i] = [int(v * LED_FADE_SPEED) for v in led_strip[i]]
         led_strip.show()
+        LED_UPDATE_RATE_PIN.write_digital(0)
 
     # Clear display after time out
     if utime.ticks_diff(utime.ticks_ms(), ts_display_on) > DISPLAY_CLEAR_MS:
