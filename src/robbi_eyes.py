@@ -2,16 +2,18 @@ import neopixel, utime
 import microbit as mb
 
 # Configuration variables
+
+# NUmber of LEDs on the strip
 LED_STRIP_LENGTH = 24
 
-# Speed of advancing LED
-LED_ADVANCE_RATE_MS = 1000 / 20  # 1000/HZ
-
 # Speed of fade (0.0 - 1.0). Higher value, slower fade.
-LED_FADE_SPEED = 0.6
+LED_FADE_SPEED = 0.8
 
-# How often to fade (refresh) the LED strip
-LED_FADE_RATE_MS = 1000 / 20  # 1000/HZ
+# How often to advance the "head" LED
+LED_ADVANCE_RATE_HZ = 20
+
+# How often to update/refresh the LED strip
+LED_UPDATE_RATE_HZ = 40
 
 # The pin sending the data to the LED strip
 LED_STRIP_PIN = mb.pin0
@@ -39,6 +41,12 @@ CHANGE_INTENSITY_BUTTON = mb.button_b
 # Here be dragons #
 ###################
 
+# Pause between advancing head LED
+LED_ADVANCE_RATE_MS = 1000 / LED_ADVANCE_RATE_HZ
+
+# Pause between refreshes of the LED strip
+LED_UPDATE_RATE_MS = 1000 / LED_UPDATE_RATE_HZ
+
 # The LED strip
 led_strip = neopixel.NeoPixel(LED_STRIP_PIN, LED_STRIP_LENGTH)
 
@@ -47,7 +55,7 @@ led_strip.clear()
 
 # Time stamps
 ts_led_advance = 0
-ts_led_fade = 0
+ts_led_update = 0
 ts_display_on = 0
 
 # Index of current "head" LED
@@ -104,8 +112,8 @@ while True:
             led_index += 1
 
     # Lower intensity of all LEDs and write data to strip
-    if utime.ticks_diff(utime.ticks_ms(), ts_led_fade) > LED_FADE_RATE_MS:
-        ts_led_fade = utime.ticks_ms()
+    if utime.ticks_diff(utime.ticks_ms(), ts_led_update) > LED_UPDATE_RATE_MS:
+        ts_led_update = utime.ticks_ms()
         for i in range(LED_STRIP_LENGTH):
             led_strip[i] = [int(v * LED_FADE_SPEED) for v in led_strip[i]]
         led_strip.show()
