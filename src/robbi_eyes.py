@@ -7,8 +7,11 @@ LED_STRIP_LENGTH = 24
 # Speed of advancing LED
 LED_ADVANCE_RATE_MS = 1000 / 20  # 1000/HZ
 
+# Speed of fade (0.0 - 1.0). Higher value, slower fade.
+LED_FADE_SPEED = 0.6
+
 # How often to fade (refresh) the LED strip
-LED_FADE_RATE_MS = 1000 / 40  # 1000/HZ
+LED_FADE_RATE_MS = 1000 / 20  # 1000/HZ
 
 # The pin sending the data to the LED strip
 LED_STRIP_PIN = mb.pin0
@@ -17,25 +20,16 @@ LED_STRIP_PIN = mb.pin0
 DISPLAY_CLEAR_MS = 1500
 
 # The LED colors
-LED_COLORS = [
-    (250, 0, 0),
-    (0, 255, 0),
-    (0, 0, 255),
-    (255, 255, 255),
-    (0,0,0)
-]
+LED_COLORS = ((250, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 255), (0, 0, 0))
 
 # The LED intensity levels
-LED_INTENSITIES = [0.1, 0.2, 0.35, 0.5, 1.0]
+LED_INTENSITIES = (0.1, 0.2, 0.35, 0.5, 1.0)
 
 # Index of currently used color
 LED_COLOR_INDEX = 0
 
 # Index of currently used intensity
 LED_INTENSITY_INDEX = 2
-
-# Divide by higher number for longer tail
-LED_FADE_SPEED = int(max(LED_COLORS[LED_COLOR_INDEX]) / 16)
 
 # The buttons to use
 CHANGE_COLOR_BUTTON = mb.button_a
@@ -56,27 +50,20 @@ ts_led_advance = 0
 ts_led_fade = 0
 ts_display_on = 0
 
+# Index of current "head" LED
+led_index = 0
 
 def calculate_color():
     """ Calculate current color data """
-    global LED_FADE_SPEED, LED_FADE_RATE_MS
     global LED_COLORS, LED_COLOR_INDEX
     global LED_INTENSITIES, LED_INTENSITY_INDEX
     # Get color to use
     c = LED_COLORS[LED_COLOR_INDEX]
     # Update with intensity
     c = [int(v * LED_INTENSITIES[LED_INTENSITY_INDEX]) for v in c]
-    # Calculate fade factor
-    LED_FADE_SPEED = int(max(c) / 16)
-    # FIXME: Enforce some minimum fade speed. Look at update freq
-    # LED_FADE_SPEED = max(LED_FADE_SPEED, LED_FADE_RATE_MS)
     return c
 
-
-# Index of current "head" LED
-led_index = 0
-
-# Get initial color
+# Calculate initial color
 led_color = calculate_color()
 
 while True:
@@ -93,7 +80,7 @@ while True:
         ts_display_on = utime.ticks_ms()
         led_strip.clear()
 
-    # Change LED intensity
+    # Change overall LED intensity
     if CHANGE_INTENSITY_BUTTON.was_pressed():
         if LED_INTENSITY_INDEX == len(LED_INTENSITIES) - 1:
             LED_INTENSITY_INDEX = 0
@@ -120,9 +107,7 @@ while True:
     if utime.ticks_diff(utime.ticks_ms(), ts_led_fade) > LED_FADE_RATE_MS:
         ts_led_fade = utime.ticks_ms()
         for i in range(LED_STRIP_LENGTH):
-            led_strip[i] = [
-                v - LED_FADE_SPEED if v > LED_FADE_SPEED else 0 for v in led_strip[i]
-            ]
+            led_strip[i] = [int(v * LED_FADE_SPEED) for v in led_strip[i]]
         led_strip.show()
 
     # Clear display after time out
