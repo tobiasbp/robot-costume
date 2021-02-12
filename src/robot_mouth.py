@@ -97,9 +97,7 @@ class NeoMatrix:
         panel_no = int((x - 1) / self._pw)
         # Calculate led index, as if the pixel was on first panel (0)
         led_index = (x - 1 - panel_no * self._pw) + ((y - 1) * self._pw)
-        # Update led_index so it's on the right panel
-        # led_index += panel_no*(self._pw*self._ph)
-
+        # Update value of LED
         self._leds[led_index + panel_no * self._pw * self._ph] = v
 
     def show(self):
