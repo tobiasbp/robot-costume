@@ -1,7 +1,6 @@
 import neopixel
 import utime
-
-# import random
+import random
 import microbit as mb
 
 # from neomatrix import NeoMatrix
@@ -104,6 +103,11 @@ class NeoMatrix:
         # return led_index + panel_no * self._pw * self._ph
         return led_index + panel_no * self._pixels_pr_panel
 
+    def fade(self, percent_to_keep=0.8):
+        """ Change intensity of all pixels """
+        for i in range(self.width * self.height):
+            self._leds[i] = [int(v * percent_to_keep) for v in self._leds[i]]
+
     def set_pixel(self, x, y, v=(0x0F, 0x00, 0x00)):
         """ Set the value of a pixel """
         self._leds[self._coordinate_to_index(x, y)] = v
@@ -147,14 +151,16 @@ led_color = calculate_color()
 
 while True:
 
-    matrix.set_pixel(15, 7)
+    # matrix.set_pixel(15, random.randint(0,7))
     for i in range(matrix.width):
-        matrix.scroll_left()
+        matrix.set_pixel(random.randint(0, 15), random.randint(0, 7))
+        # matrix.scroll_left()
         # matrix.set_pixel(i+1, 4)
+        matrix.fade()
         matrix.show()
         # utime.sleep_ms(1000)
         # utime.sleep_ms(10)
-    matrix.clear()
+    # matrix.clear()
 
     """
     for x in range(matrix.width):
