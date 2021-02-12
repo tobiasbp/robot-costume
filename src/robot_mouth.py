@@ -1,6 +1,8 @@
 import neopixel, utime
 import microbit as mb
 
+# from neomatrix import NeoMatrix
+
 # Configuration variables
 
 # NUmber of LEDs on the strip
@@ -65,6 +67,7 @@ ts_display_on = 0
 # Index of current "head" LED
 led_index = 0
 
+
 def calculate_color():
     """ Calculate current color data """
     global LED_COLORS, LED_COLOR_INDEX
@@ -75,9 +78,11 @@ def calculate_color():
     c = [int(v * LED_INTENSITIES[LED_INTENSITY_INDEX]) for v in c]
     return c
 
+
 class NeoMatrix:
-    ''' An LED matrix made up of horizontally arranged panels. '''
-    def __init__(self, data_pin, panel_width = 8, panel_height = 8, no_of_panels = 1):
+    """ An LED matrix made up of horizontally arranged panels. """
+
+    def __init__(self, data_pin, panel_width=8, panel_height=8, no_of_panels=1):
         self.width = panel_width * no_of_panels
         self.height = panel_height
         self._pw = panel_width
@@ -85,42 +90,51 @@ class NeoMatrix:
         self._panels = no_of_panels
         self._leds = neopixel.NeoPixel(data_pin, self._ph * self._pw * self._panels)
 
-    def set_pixel(self, x, y, v = (0x0F,0x00,0x00)):
-        ''' Set the value of a pixel '''
+    def set_pixel(self, x, y, v=(0x0F, 0x00, 0x00)):
+        """ Set the value of a pixel """
         # FIXME: Support more than 1 panel
-        led_index = (x-1) + ((y-1) * self._pw)
-        self._leds[led_index] = v
+        # What panel is the pixel on? (0 indexed)
+        panel_no = int((x - 1) / self._pw)
+        # Calculate led index, as if the pixel was on first panel (0)
+        led_index = (x - 1 - panel_no * self._pw) + ((y - 1) * self._pw)
+        # Update led_index so it's on the right panel
+        # led_index += panel_no*(self._pw*self._ph)
+
+        self._leds[led_index + panel_no * self._pw * self._ph] = v
 
     def show(self):
+        """ Push data to the LEDs """
         self._leds.show()
 
     def clear(self):
+        """ Turn all LEDs off """
         self._leds.clear()
-        
-matrix = NeoMatrix(LED_STRIP_DATA_PIN)
 
-#matrix.set_pixel(1,1, (50,0,0))
-#matrix.set_pixel(1,1, (50,0,0))
-#matrix.show()
+
+# Set up a an LED matrix
+matrix = NeoMatrix(LED_STRIP_DATA_PIN, no_of_panels=2)
+matrix.clear()
+# matrix.set_pixel(16,8)
+matrix.show()
 
 # Calculate initial color
 led_color = calculate_color()
 
 
 while True:
+    pass
 
-    
     for x in range(matrix.width):
         for y in range(matrix.height):
-            matrix.set_pixel(x+1, y+1)
+            matrix.set_pixel(x + 1, y + 1)
             matrix.show()
             utime.sleep_ms(10)
-            
+
     matrix.clear()
     matrix.show()
     utime.sleep_ms(10)
-    
-    '''
+
+    """
     # Change LED color
     if CHANGE_COLOR_BUTTON.was_pressed():
         if LED_COLOR_INDEX == len(LED_COLORS) - 1:
@@ -168,4 +182,4 @@ while True:
     # Clear display after time out
     if utime.ticks_diff(utime.ticks_ms(), ts_display_on) > DISPLAY_CLEAR_MS:
         mb.display.clear()
-    '''
+    """
