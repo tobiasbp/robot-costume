@@ -92,13 +92,16 @@ class NeoMatrix:
 
     def set_pixel(self, x, y, v=(0x0F, 0x00, 0x00)):
         """ Set the value of a pixel """
-        # FIXME: Support more than 1 panel
         # What panel is the pixel on? (0 indexed)
         panel_no = int((x - 1) / self._pw)
         # Calculate led index, as if the pixel was on first panel (0)
         led_index = (x - 1 - panel_no * self._pw) + ((y - 1) * self._pw)
         # Update value of LED
         self._leds[led_index + panel_no * self._pw * self._ph] = v
+
+    def clear_pixel(self, x, y):
+        """ Turn off pixel """
+        self.set_pixel(x, y, v=(0x00, 0x00, 0x00))
 
     def show(self):
         """ Push data to the LEDs """
@@ -126,7 +129,10 @@ while True:
         for y in range(matrix.height):
             matrix.set_pixel(x + 1, y + 1)
             matrix.show()
-            utime.sleep_ms(10)
+            utime.sleep_ms(1)
+            matrix.clear_pixel(x + 1, y + 1)
+            matrix.show()
+            utime.sleep_ms(1)
 
     matrix.clear()
     matrix.show()
