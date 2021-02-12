@@ -90,14 +90,25 @@ class NeoMatrix:
         self._panels = no_of_panels
         self._leds = neopixel.NeoPixel(data_pin, self._ph * self._pw * self._panels)
 
-    def set_pixel(self, x, y, v=(0x0F, 0x00, 0x00)):
-        """ Set the value of a pixel """
+    def _coordinate_to_index(self, x, y):
+        """ Translate a coordinate to a pixel index """
         # What panel is the pixel on? (0 indexed)
         panel_no = int((x - 1) / self._pw)
         # Calculate led index, as if the pixel was on first panel (0)
         led_index = (x - 1 - panel_no * self._pw) + ((y - 1) * self._pw)
-        # Update value of LED
-        self._leds[led_index + panel_no * self._pw * self._ph] = v
+        # Pad the index with number of pixels in a panel
+        return led_index + panel_no * self._pw * self._ph
+
+    def set_pixel(self, x, y, v=(0x0F, 0x00, 0x00)):
+        """ Set the value of a pixel """
+        self._leds[self._coordinate_to_index(x, y)] = v
+
+    def scroll_left():
+        pass
+        """
+        for x in range(2, self.width):
+            for y in range(1, self.height):
+        """
 
     def clear_pixel(self, x, y):
         """ Turn off pixel """
@@ -115,7 +126,7 @@ class NeoMatrix:
 # Set up a an LED matrix
 matrix = NeoMatrix(LED_STRIP_DATA_PIN, no_of_panels=2)
 matrix.clear()
-# matrix.set_pixel(16,8)
+matrix.set_pixel(16, 8)
 matrix.show()
 
 # Calculate initial color
@@ -128,14 +139,14 @@ while True:
     for x in range(matrix.width):
         for y in range(matrix.height):
             matrix.set_pixel(x + 1, y + 1)
-            matrix.show()
+            # matrix.show()
             utime.sleep_ms(1)
             matrix.clear_pixel(x + 1, y + 1)
-            matrix.show()
+            # matrix.show()
             utime.sleep_ms(1)
 
-    matrix.clear()
-    matrix.show()
+    # matrix.clear()
+    # matrix.show()
     utime.sleep_ms(10)
 
     """
