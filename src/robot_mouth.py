@@ -1,4 +1,7 @@
-import neopixel, utime
+import neopixel
+import utime
+
+# import random
 import microbit as mb
 
 # from neomatrix import NeoMatrix
@@ -88,16 +91,18 @@ class NeoMatrix:
         self._pw = panel_width
         self._ph = panel_height
         self._panels = no_of_panels
+        self._pixels_pr_panel = self._pw * self._pw
         self._leds = neopixel.NeoPixel(data_pin, self._ph * self._pw * self._panels)
 
     def _coordinate_to_index(self, x, y):
         """ Translate a coordinate to a pixel index """
         # What panel is the pixel on? (0 indexed)
-        panel_no = int((x - 1) / self._pw)
+        panel_no = int(x / self._pw)
         # Calculate led index, as if the pixel was on first panel (0)
-        led_index = (x - 1 - panel_no * self._pw) + ((y - 1) * self._pw)
+        led_index = (x - panel_no * self._pw) + (y * self._pw)
         # Pad the index with number of pixels in a panel
-        return led_index + panel_no * self._pw * self._ph
+        # return led_index + panel_no * self._pw * self._ph
+        return led_index + panel_no * self._pixels_pr_panel
 
     def set_pixel(self, x, y, v=(0x0F, 0x00, 0x00)):
         """ Set the value of a pixel """
@@ -109,12 +114,12 @@ class NeoMatrix:
 
     def scroll_left(self):
         """ Scroll all pixels to the left. Right most column cleared. """
-        for x in range(2, self.width + 1):
-            for y in range(1, self.height + 1):
+        for x in range(1, self.width):
+            for y in range(self.height):
                 self.set_pixel(x - 1, y, self.get_pixel(x, y))
         # Clear pixels in right most column
-        for y in range(1, self.height + 1):
-            self.clear_pixel(self.width, y)
+        for y in range(self.height):
+            self.clear_pixel(self.width - 1, y)
 
     def clear_pixel(self, x, y):
         """ Turn off pixel """
@@ -132,8 +137,8 @@ class NeoMatrix:
 # Set up a an LED matrix
 matrix = NeoMatrix(LED_STRIP_DATA_PIN, no_of_panels=2)
 matrix.clear()
-# matrix.set_pixel(15, 8)
-matrix.scroll_left()
+matrix.set_pixel(1, 1)
+# matrix.scroll_left()
 matrix.show()
 
 # Calculate initial color
@@ -141,11 +146,16 @@ led_color = calculate_color()
 
 
 while True:
-    matrix.set_pixel(16, 8)
+
+    matrix.set_pixel(15, 7)
     for i in range(matrix.width):
         matrix.scroll_left()
+        # matrix.set_pixel(i+1, 4)
         matrix.show()
-        utime.sleep_ms(50)
+        # utime.sleep_ms(1000)
+        # utime.sleep_ms(10)
+    matrix.clear()
+
     """
     for x in range(matrix.width):
         for y in range(matrix.height):
