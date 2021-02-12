@@ -103,12 +103,18 @@ class NeoMatrix:
         """ Set the value of a pixel """
         self._leds[self._coordinate_to_index(x, y)] = v
 
-    def scroll_left():
-        pass
-        """
-        for x in range(2, self.width):
-            for y in range(1, self.height):
-        """
+    def get_pixel(self, x, y):
+        """ Get the value of a pixel """
+        return self._leds[self._coordinate_to_index(x, y)]
+
+    def scroll_left(self):
+        """ Scroll all pixels to the left. Right most column cleared. """
+        for x in range(2, self.width + 1):
+            for y in range(1, self.height + 1):
+                self.set_pixel(x - 1, y, self.get_pixel(x, y))
+        # Clear pixels in right most column
+        for y in range(1, self.height + 1):
+            self.clear_pixel(self.width, y)
 
     def clear_pixel(self, x, y):
         """ Turn off pixel """
@@ -126,7 +132,8 @@ class NeoMatrix:
 # Set up a an LED matrix
 matrix = NeoMatrix(LED_STRIP_DATA_PIN, no_of_panels=2)
 matrix.clear()
-matrix.set_pixel(16, 8)
+# matrix.set_pixel(15, 8)
+matrix.scroll_left()
 matrix.show()
 
 # Calculate initial color
@@ -134,8 +141,12 @@ led_color = calculate_color()
 
 
 while True:
-    pass
-
+    matrix.set_pixel(16, 8)
+    for i in range(matrix.width):
+        matrix.scroll_left()
+        matrix.show()
+        utime.sleep_ms(50)
+    """
     for x in range(matrix.width):
         for y in range(matrix.height):
             matrix.set_pixel(x + 1, y + 1)
@@ -148,53 +159,4 @@ while True:
     # matrix.clear()
     # matrix.show()
     utime.sleep_ms(10)
-
-    """
-    # Change LED color
-    if CHANGE_COLOR_BUTTON.was_pressed():
-        if LED_COLOR_INDEX == len(LED_COLORS) - 1:
-            LED_COLOR_INDEX = 0
-        else:
-            LED_COLOR_INDEX += 1
-        led_color = calculate_color()
-        # Display color number
-        mb.display.show(LED_COLOR_INDEX + 1)
-        ts_display_on = utime.ticks_ms()
-        led_strip.clear()
-
-    # Change overall LED intensity
-    if CHANGE_INTENSITY_BUTTON.was_pressed():
-        if LED_INTENSITY_INDEX == len(LED_INTENSITIES) - 1:
-            LED_INTENSITY_INDEX = 0
-        else:
-            LED_INTENSITY_INDEX += 1
-        led_color = calculate_color()
-        # Display intensity index
-        mb.display.show(LED_INTENSITY_INDEX + 1)
-        ts_display_on = utime.ticks_ms()
-        led_strip.clear()
-
-    # Advance to next LED
-    if utime.ticks_diff(utime.ticks_ms(), ts_led_advance) > LED_ADVANCE_RATE_MS:
-        ts_led_advance = utime.ticks_ms()
-        # Update LED
-        led_strip[led_index] = led_color
-        # Calculate index of next LED
-        if led_index == LED_STRIP_LENGTH - 1:
-            led_index = 0
-        else:
-            led_index += 1
-
-    # Lower intensity of all LEDs and write data to strip
-    if utime.ticks_diff(utime.ticks_ms(), ts_led_update) > LED_UPDATE_RATE_MS:
-        LED_UPDATE_RATE_PIN.write_digital(1)
-        ts_led_update = utime.ticks_ms()
-        for i in range(LED_STRIP_LENGTH):
-            led_strip[i] = [int(v * LED_FADE_SPEED) for v in led_strip[i]]
-        led_strip.show()
-        LED_UPDATE_RATE_PIN.write_digital(0)
-
-    # Clear display after time out
-    if utime.ticks_diff(utime.ticks_ms(), ts_display_on) > DISPLAY_CLEAR_MS:
-        mb.display.clear()
     """
